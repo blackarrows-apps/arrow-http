@@ -22,7 +22,6 @@ A modular, client-agnostic HTTP library for Kotlin Multiplatform projects. Write
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
-        // TODO: Add GitHub packages repository when published
     }
 }
 
@@ -31,8 +30,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("io.blackarrows:http-core:1.0.0")
-                implementation("io.blackarrows:http-ktor:1.0.0")
+                implementation("io.github.blackarrows-apps:http-core:1.0.0")
+                implementation("io.github.blackarrows-apps:http-ktor:1.0.0")
             }
         }
     }
@@ -42,8 +41,9 @@ kotlin {
 ### 2. Setup (with Koin)
 
 ```kotlin
-import io.blackarrows.http.ktor.di.httpKtorModule
+import io.blackarrows.http.ktor.di.httpModule
 import io.blackarrows.http.providers.HeaderProvider
+import io.blackarrows.http.providers.AuthRefresher
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
 
@@ -58,10 +58,23 @@ startKoin {
                             *additional
                         )
                     }
+
+                    override fun invalidate() {
+                        // Clear cached headers if needed
+                    }
+                }
+            }
+
+            single<AuthRefresher> {
+                object : AuthRefresher {
+                    override suspend fun refreshToken(): Result<String> {
+                        // Implement token refresh logic
+                        return Result.success("new_token")
+                    }
                 }
             }
         },
-        httpKtorModule
+        httpModule
     )
 }
 ```
@@ -71,6 +84,8 @@ startKoin {
 ```kotlin
 import io.blackarrows.http.io.HttpRequestExecutor
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 
 @Serializable
 data class User(val id: Int, val name: String, val email: String)
@@ -78,21 +93,35 @@ data class User(val id: Int, val name: String, val email: String)
 class UserRepository(
     private val httpExecutor: HttpRequestExecutor
 ) {
-    suspend fun getUsers(): List<User> {
-        val response = httpExecutor.getJson(
-            url = "https://api.example.com/users",
-            authRequired = true
-        )
-        return response.bodyAsJson(ListSerializer(User.serializer()))
+    private val json = Json { ignoreUnknownKeys = true }
+
+    suspend fun getUsers(): Result<List<User>> {
+        return try {
+            val response = httpExecutor.getJson(
+                url = "https://api.example.com/users",
+                authRequired = true
+            )
+            val bodyString = response.body?.decodeToString() ?: "[]"
+            val users = json.decodeFromString(ListSerializer(User.serializer()), bodyString)
+            Result.success(users)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
-    suspend fun createUser(user: User): User {
-        val response = httpExecutor.postJson(
-            url = "https://api.example.com/users",
-            body = user,
-            authRequired = true
-        )
-        return response.bodyAsJson(User.serializer())
+    suspend fun createUser(user: User): Result<User> {
+        return try {
+            val response = httpExecutor.postJson(
+                url = "https://api.example.com/users",
+                body = user,
+                authRequired = true
+            )
+            val bodyString = response.body?.decodeToString() ?: throw IllegalStateException("Empty response")
+            val createdUser = json.decodeFromString(User.serializer(), bodyString)
+            Result.success(createdUser)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }
 ```
@@ -391,12 +420,29 @@ fun testRepository() = runTest {
 }
 ```
 
-## Examples
+## Sample Application
 
-Check out the [examples](examples/) directory (coming soon) for complete sample applications:
-- Android app with authentication
-- iOS app with image uploads
-- Multiplatform shared repository layer
+Check out the [`sample`](sample/) module for a complete Android demo app that showcases:
+
+- **GET JSON**: Fetching and displaying images from Picsum Photos API
+- **POST JSON**: Creating posts via JSONPlaceholder API
+- **GET Raw/Binary**: Downloading raw file bytes
+- **PUT JSON**: Updating existing resources
+- **DELETE**: Deleting resources by ID
+- **POST Form**: Submitting form-urlencoded data
+
+The sample app demonstrates:
+- Proper Koin DI setup with the library
+- Repository pattern implementation
+- MVVM architecture with ViewModels
+- Error handling and loading states
+- Jetpack Compose UI
+
+**To run the sample app:**
+```bash
+./gradlew :sample:assembleDebug
+# or open in Android Studio and run the 'sample' configuration
+```
 
 ## Contributing
 
@@ -419,9 +465,9 @@ Client implementations will be prioritized based on community demand.
 
 - [x] Core abstractions (`http-core`)
 - [x] Ktor implementation (`http-ktor`)
+- [x] Maven Central publishing
+- [x] Sample Android application
 - [ ] Comprehensive test suite
-- [ ] Maven Central publishing
-- [ ] Sample applications
 - [ ] Additional client implementations (based on demand)
 - [ ] WebSocket support
 - [ ] GraphQL utilities
