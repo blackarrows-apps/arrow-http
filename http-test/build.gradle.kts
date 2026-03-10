@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.maven.central.publish)
 }
 
@@ -23,23 +22,14 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                // Kotlinx
-                implementation(libs.kotlinx.coroutines.core)
-                implementation(libs.kotlinx.serialization.json)
-            }
-        }
-
-        commonTest {
-            dependencies {
-                implementation(libs.kotlin.test)
-                implementation(libs.kotlinx.coroutines.test)
+                api(project(":http-core"))
             }
         }
     }
 }
 
 android {
-    namespace = "io.blackarrows.http"
+    namespace = "io.blackarrows.http.test"
     compileSdk = 35
 
     defaultConfig {
@@ -56,11 +46,11 @@ group = "io.github.blackarrows-apps"
 version = "1.0.1"
 
 mavenPublishing {
-    coordinates("io.github.blackarrows-apps", "http-core", "1.0.1")
+    coordinates("io.github.blackarrows-apps", "http-test", "1.0.1")
 
     pom {
-        name.set("Arrow HTTP Core")
-        description.set("Client-agnostic HTTP abstractions for Kotlin Multiplatform")
+        name.set("Arrow HTTP Test")
+        description.set("Test utilities for Arrow HTTP — fake executor, response builders, and call recording")
         url.set("https://github.com/blackarrows-apps/arrow-http")
 
         licenses {

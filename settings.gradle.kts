@@ -19,4 +19,5 @@ dependencyResolutionManagement {
 
 include(":http-core")
 include(":http-ktor")
+include(":http-test")
 include(":sample")
