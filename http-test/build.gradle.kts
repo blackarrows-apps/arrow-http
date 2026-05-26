@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.android.library)
@@ -18,6 +20,9 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs()
 
     sourceSets {
         commonMain {
@@ -43,10 +48,10 @@ android {
 }
 
 group = "io.github.blackarrows-apps"
-version = "1.0.1"
+version = "1.1.0"
 
 mavenPublishing {
-    coordinates("io.github.blackarrows-apps", "http-test", "1.0.1")
+    coordinates("io.github.blackarrows-apps", "http-test", "1.1.0")
 
     pom {
         name.set("Arrow HTTP Test")
