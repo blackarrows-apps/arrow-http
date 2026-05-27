@@ -42,7 +42,11 @@ class KtorHttpRequestExecutor(
         executeWithPolicies {
             val mergedHeaders = mergeHeaders(authRequired, headers, config.headers)
             client.get(url) {
-                contentType(ContentType.Application.Json)
+                // NOTE: do NOT call contentType() on GET requests — GET has no body so
+                // Content-Type is meaningless. Worse, it adds a non-simple header that
+                // triggers a CORS preflight even when Authorization already does so, and
+                // the server's preflight response may not list Content-Type in
+                // Access-Control-Allow-Headers, causing Safari/WebKit to block the request.
                 applyHeaders(mergedHeaders)
                 url {
                     queryParams.forEach { (k, v) -> parameters.append(k, v) }
