@@ -1,5 +1,8 @@
 # Arrow HTTP
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.blackarrows-apps/http-core)](https://central.sonatype.com/search?q=io.github.blackarrows-apps+http)
+[![Latest Release](https://img.shields.io/github/v/release/blackarrows-apps/arrow-http)](https://github.com/blackarrows-apps/arrow-http/releases)
+
 A modular, client-agnostic HTTP library for Kotlin Multiplatform projects. Write your HTTP code once, run it everywhere.
 
 **Author:** [Emmanuel Conradie](https://github.com/E5c11)
@@ -30,8 +33,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("io.github.blackarrows-apps:http-core:1.0.0")
-                implementation("io.github.blackarrows-apps:http-ktor:1.0.0")
+                implementation("io.github.blackarrows-apps:http-core:1.1.1")
+                implementation("io.github.blackarrows-apps:http-ktor:1.1.1")
             }
         }
     }
