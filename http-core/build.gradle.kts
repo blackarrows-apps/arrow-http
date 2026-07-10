@@ -28,6 +28,9 @@ kotlin {
     js {
         browser()
         nodejs()
+        binaries.library()
+        useEsModules()
+        generateTypeScriptDefinitions()
     }
 
     sourceSets {
