@@ -109,10 +109,10 @@ android {
 }
 
 group = "io.github.blackarrows-apps"
-version = "1.1.1"
+version = "1.2.0"
 
 mavenPublishing {
-    coordinates("io.github.blackarrows-apps", "http-ktor", "1.1.1")
+    coordinates("io.github.blackarrows-apps", "http-ktor", "1.2.0")
 
     pom {
         name.set("Arrow HTTP Ktor")
