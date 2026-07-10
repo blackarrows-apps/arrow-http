@@ -39,9 +39,14 @@ android {
 }
 
 dependencies {
-    // Published libraries from Maven Central
-    implementation("io.github.blackarrows-apps:http-core:1.0.0")
-    implementation("io.github.blackarrows-apps:http-ktor:1.0.0")
+    // Local project modules, not the published Maven Central artifacts: the sample
+    // app is meant to demonstrate the current state of this repo (including
+    // in-progress, unpublished changes like PATCH support), not whatever version
+    // happens to be released. It was previously pinned to a stale published 1.0.0
+    // even after http-core/http-ktor moved to 1.1.1 — this keeps it in sync going
+    // forward without needing a version bump here on every release.
+    implementation(project(":http-core"))
+    implementation(project(":http-ktor"))
 
     // Koin for dependency injection
     implementation(libs.koin.core)
