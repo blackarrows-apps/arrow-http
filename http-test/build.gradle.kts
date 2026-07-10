@@ -30,6 +30,13 @@ kotlin {
                 api(project(":http-core"))
             }
         }
+
+        commonTest {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+            }
+        }
     }
 }
 
