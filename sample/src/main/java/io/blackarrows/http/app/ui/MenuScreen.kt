@@ -49,6 +49,12 @@ fun MenuScreen(
             route = "put_json"
         ),
         TestOption(
+            title = "PATCH JSON",
+            description = "Partially update an existing post",
+            icon = Icons.Default.Edit,
+            route = "patch_json"
+        ),
+        TestOption(
             title = "DELETE",
             description = "Delete a post by ID",
             icon = Icons.Default.Delete,

@@ -71,6 +71,36 @@ class PostRepository(
         }
     }
 
+    suspend fun patchPost(id: Int, title: String, body: String): Result<Post> {
+        return try {
+            Log.d("PostRepository", "Patching post: id=$id")
+
+            val requestBody = Post(
+                id = id,
+                userId = 1,
+                title = title,
+                body = body
+            )
+
+            val response = httpExecutor.patchJson(
+                url = "https://jsonplaceholder.typicode.com/posts/$id",
+                body = requestBody,
+                authRequired = false
+            )
+
+            Log.d("PostRepository", "Response statusCode=${response.statusCode}")
+
+            val bodyString = response.body?.decodeToString() ?: "{}"
+            val post = json.decodeFromString<Post>(bodyString)
+            Log.d("PostRepository", "Successfully patched post with id=${post.id}")
+
+            Result.success(post)
+        } catch (e: Exception) {
+            Log.e("PostRepository", "Error patching post", e)
+            Result.failure(e)
+        }
+    }
+
     suspend fun deletePost(id: Int): Result<Unit> {
         return try {
             Log.d("PostRepository", "Deleting post: id=$id")
