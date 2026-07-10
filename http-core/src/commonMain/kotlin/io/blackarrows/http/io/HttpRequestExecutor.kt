@@ -64,6 +64,15 @@ interface HttpRequestExecutor {
         config: HttpRequestConfig = HttpRequestConfig.Default,
     ): ApiResponse
 
+    /**
+     * Sends a PATCH request with a JSON-serialized body.
+     *
+     * The default implementation throws [UnsupportedOperationException]: this method was
+     * added in 1.2.0 as a default (not abstract) member so existing third-party
+     * [HttpRequestExecutor] implementations keep compiling without adding PATCH support.
+     * [io.blackarrows.http.ktor.KtorHttpRequestExecutor] overrides this with a real
+     * implementation.
+     */
     suspend fun patchJson(
         url: String,
         body: Any,
@@ -75,6 +84,12 @@ interface HttpRequestExecutor {
             "If you're using KtorHttpRequestExecutor from http-ktor, update to 1.2.0+."
     )
 
+    /**
+     * Sends a PATCH request with a raw body and explicit content type.
+     *
+     * The default implementation throws [UnsupportedOperationException]; see [patchJson]
+     * for why this is a default rather than an abstract member.
+     */
     suspend fun patchRaw(
         url: String,
         body: Any,

@@ -167,6 +167,7 @@ class KtorHttpRequestExecutor(
             }
         }
 
+    /** Issues a real HTTP PATCH request via Ktor's `client.patch`. */
     override suspend fun patchJson(
         url: String,
         body: Any,

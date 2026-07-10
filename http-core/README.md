@@ -16,6 +16,8 @@ This module defines the core contracts and types needed for HTTP communication a
 - Android
 - JVM
 - iOS (arm64, x64, simulatorArm64)
+- wasmJs
+- js (browser + Node.js), published in library mode with generated TypeScript definitions
 
 ## Core Components
 
@@ -39,6 +41,11 @@ interface HttpRequestExecutor {
     // PUT requests
     suspend fun putJson(url: String, body: Any, ...): ApiResponse
     suspend fun putRaw(url: String, body: Any, contentType: String, ...): ApiResponse
+
+    // PATCH requests (default implementations throw UnsupportedOperationException;
+    // see KtorHttpRequestExecutor in http-ktor for a real implementation)
+    suspend fun patchJson(url: String, body: Any, ...): ApiResponse
+    suspend fun patchRaw(url: String, body: Any, contentType: String, ...): ApiResponse
 
     // DELETE requests
     suspend fun deleteJson(url: String, body: Any? = null, ...): ApiResponse

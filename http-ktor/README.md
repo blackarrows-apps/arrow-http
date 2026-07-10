@@ -20,6 +20,9 @@ This module implements the `HttpRequestExecutor` interface using Ktor Client, pr
   - arm64 (physical devices)
   - x64 (Intel simulators)
   - simulatorArm64 (Apple Silicon simulators)
+- wasmJs (Js engine)
+- js (Js engine) — browser and Node.js, published in library mode with generated
+  TypeScript definitions
 
 ## Installation
 
@@ -225,6 +228,26 @@ val response = executor.putRaw(
 )
 ```
 
+### PATCH Requests
+
+```kotlin
+// JSON PATCH
+val patch = mapOf("name" to "John Patched")
+val response = executor.patchJson(
+    url = "https://api.example.com/users/1",
+    body = patch,
+    authRequired = true
+)
+
+// Raw PATCH
+val response = executor.patchRaw(
+    url = "https://api.example.com/document",
+    body = xmlContent,
+    contentType = "application/xml",
+    authRequired = true
+)
+```
+
 ### DELETE Requests
 
 ```kotlin
@@ -316,6 +339,32 @@ actual fun createHttpClient(config: HttpClientConfig<*>.() -> Unit): HttpClient 
     }
 }
 ```
+
+### wasmJs / js (Kotlin/JS)
+
+Both web targets use Ktor's `Js` engine (Fetch API under the hood) and share the same
+`HttpClient` setup — see `Client.wasmJs.kt` / `Client.js.kt`:
+
+```kotlin
+// In http-ktor/src/jsMain/kotlin/io/blackarrows/http/ktor/Client.js.kt
+// (wasmJsMain's Client.wasmJs.kt is identical — see that file's comment for why
+// this isn't a shared webMain source set on this repo's pinned Kotlin version)
+actual fun createHttpClient(): HttpClient =
+    HttpClient(Js) {
+        install(ContentNegotiation) { json(LenientJson) }
+        install(HttpTimeout) { /* ... */ }
+        // Strips the Content-Length header the browser's Fetch API leaves stale
+        // after transparently gzip-decompressing a response.
+        install(createClientPlugin("StripResponseContentLength") { /* ... */ })
+    }
+```
+
+`http-core` and `http-ktor`'s `js` target is published in library mode
+(`binaries.library()`) with generated TypeScript definitions
+(`generateTypeScriptDefinitions()`). Not everything is `@JsExport`-able: `HttpHeaders`,
+`ApiResponse`, and the `HttpException` hierarchy export cleanly, but
+`HttpRequestExecutor` itself cannot, since Kotlin/JS doesn't support exporting
+`suspend fun` declarations.
 
 ## Components
 

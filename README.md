@@ -11,7 +11,7 @@ A modular, client-agnostic HTTP library for Kotlin Multiplatform projects. Write
 
 - **Client Agnostic**: Write business logic independent of HTTP client implementation
 - **Type Safe**: Comprehensive error handling with sealed exception hierarchy
-- **Multiplatform**: Android, iOS, and JVM support out of the box
+- **Multiplatform**: Android, iOS, JVM, wasmJs, and js (browser + Node.js) support out of the box
 - **Modular**: Use only what you need - separate core abstractions from implementations
 - **Production Ready**: Built-in retry policies, auth handling, and request interceptors
 - **Extensible**: Currently supports Ktor, with more clients planned based on community demand
@@ -183,12 +183,21 @@ Ktor-based implementation with platform-specific optimizations:
 
 [📖 Full Documentation](http-ktor/README.md)
 
+### Kotlin/JS
+
+`http-core` and `http-ktor` also target `js` (browser + Node.js), published in library
+mode with generated TypeScript definitions (`.d.ts`) — usable directly from a TypeScript
+project via npm once published. `HttpHeaders`, `ApiResponse`, and the `HttpException`
+hierarchy export cleanly via `@JsExport`; `HttpRequestExecutor` itself does not, since
+Kotlin/JS cannot export `suspend fun` declarations — a TypeScript-facing wrapper exposing
+`Promise`-returning methods is future work, not part of this release. The npm package
+name/registry is a decision for the actual publish step, not fixed here.
+
 ### Coming Soon
 
 Additional HTTP client implementations will be added based on **community demand**:
 - `http-okhttp` - Direct OkHttp implementation for Android
 - `http-urlconnection` - Pure Java URLConnection for lightweight JVM apps
-- `http-js` - JavaScript fetch API for Kotlin/JS targets
 
 **Want a specific client?** [Open an issue](https://github.com/E5c11/arrow-http/issues) to request it!
 
@@ -201,6 +210,8 @@ Additional HTTP client implementations will be added based on **community demand
 | iOS arm64 | ✅    | Darwin        |
 | iOS x64  | ✅     | Darwin        |
 | iOS simulatorArm64 | ✅ | Darwin   |
+| wasmJs   | ✅     | Js            |
+| js (browser + Node) | ✅ | Js       |
 
 ## Features
 
@@ -260,6 +271,10 @@ executor.postQuery(url, queryParams, contentType, headers, authRequired)
 executor.putJson(url, body, headers, authRequired)
 executor.putRaw(url, body, contentType, headers, authRequired)
 
+// PATCH
+executor.patchJson(url, body, headers, authRequired)
+executor.patchRaw(url, body, contentType, headers, authRequired)
+
 // DELETE
 executor.deleteJson(url, body, headers, authRequired)
 executor.deleteRaw(url, body, contentType, headers, authRequired)
@@ -305,7 +320,7 @@ val response = executor.getJson(url, config = config)
 ```
 ┌─────────────────────────────────────┐
 │      Your Application Code          │
-│  (Platform: Android/iOS/JVM)        │
+│  (Platform: Android/iOS/JVM/Web)    │
 └─────────────────┬───────────────────┘
                   │
                   ▼
@@ -333,6 +348,7 @@ val response = executor.getJson(url, config = config)
 │  Android: OkHttp                    │
 │  iOS: Darwin (NSURLSession)         │
 │  JVM: OkHttp                        │
+│  wasmJs/js: Js (Fetch API)          │
 └─────────────────────────────────────┘
 ```
 
@@ -431,6 +447,7 @@ Check out the [`sample`](sample/) module for a complete Android demo app that sh
 - **POST JSON**: Creating posts via JSONPlaceholder API
 - **GET Raw/Binary**: Downloading raw file bytes
 - **PUT JSON**: Updating existing resources
+- **PATCH JSON**: Partially updating existing resources
 - **DELETE**: Deleting resources by ID
 - **POST Form**: Submitting form-urlencoded data
 
