@@ -25,6 +25,11 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs()
 
+    js {
+        browser()
+        nodejs()
+    }
+
     sourceSets {
         commonMain {
             dependencies {

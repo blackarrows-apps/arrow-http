@@ -1,5 +1,5 @@
-// Kept in sync manually with the `jsMain` sibling Client.js.kt: both targets use the
-// identical Ktor Js engine and HttpClient setup. Not merged into a shared `webMain`
+// Kept in sync manually with the `wasmJsMain` sibling Client.wasmJs.kt: both targets use
+// the identical Ktor Js engine and HttpClient setup. Not merged into a shared `webMain`
 // source set — this repo pins Kotlin 2.1.0, where a manual `webMain` requires explicit
 // `dependsOn()` edges that disable the Kotlin default hierarchy template project-wide,
 // silently breaking `iosMain`'s auto-wiring to the ios targets. Kotlin 2.2.20+ adds an
@@ -20,7 +20,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 
 // @OptIn(InternalAPI::class) cannot be used here: the import path for InternalAPI
-// differs across Ktor minor versions and the wasmJs compilation fails to resolve it.
+// differs across Ktor minor versions and the js compilation fails to resolve it.
 // @Suppress("OPT_IN_USAGE_ERROR") achieves the same result without an import.
 @Suppress("OPT_IN_USAGE_ERROR")
 actual fun createHttpClient(): HttpClient =

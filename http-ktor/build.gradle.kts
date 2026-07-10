@@ -25,6 +25,11 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs()
 
+    js {
+        browser()
+        nodejs()
+    }
+
     sourceSets {
         commonMain {
             dependencies {
@@ -73,6 +78,12 @@ kotlin {
         }
 
         wasmJsMain {
+            dependencies {
+                implementation(libs.ktor.client.js)
+            }
+        }
+
+        jsMain {
             dependencies {
                 implementation(libs.ktor.client.js)
             }
