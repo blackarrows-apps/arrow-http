@@ -64,6 +64,29 @@ interface HttpRequestExecutor {
         config: HttpRequestConfig = HttpRequestConfig.Default,
     ): ApiResponse
 
+    suspend fun patchJson(
+        url: String,
+        body: Any,
+        headers: HttpHeaders = HttpHeaders.Empty,
+        authRequired: Boolean = false,
+        config: HttpRequestConfig = HttpRequestConfig.Default,
+    ): ApiResponse = throw UnsupportedOperationException(
+        "patchJson is not implemented by this HttpRequestExecutor. " +
+            "If you're using KtorHttpRequestExecutor from http-ktor, update to 1.2.0+."
+    )
+
+    suspend fun patchRaw(
+        url: String,
+        body: Any,
+        contentType: String = "application/octet-stream",
+        headers: HttpHeaders = HttpHeaders.Empty,
+        authRequired: Boolean = false,
+        config: HttpRequestConfig = HttpRequestConfig.Default,
+    ): ApiResponse = throw UnsupportedOperationException(
+        "patchRaw is not implemented by this HttpRequestExecutor. " +
+            "If you're using KtorHttpRequestExecutor from http-ktor, update to 1.2.0+."
+    )
+
     suspend fun deleteJson(
         url: String,
         body: Any? = null,
