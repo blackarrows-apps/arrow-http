@@ -11,4 +11,4 @@ data class RecordedCall(
     val queryParams: Map<String, String> = emptyMap(),
 )
 
-enum class FakeHttpMethod { GET, POST, PUT, DELETE }
+enum class FakeHttpMethod { GET, POST, PUT, PATCH, DELETE }

@@ -30,6 +30,13 @@ kotlin {
                 api(project(":http-core"))
             }
         }
+
+        commonTest {
+            dependencies {
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+            }
+        }
     }
 }
 
@@ -48,10 +55,10 @@ android {
 }
 
 group = "io.github.blackarrows-apps"
-version = "1.1.1"
+version = "1.2.0"
 
 mavenPublishing {
-    coordinates("io.github.blackarrows-apps", "http-test", "1.1.1")
+    coordinates("io.github.blackarrows-apps", "http-test", "1.2.0")
 
     pom {
         name.set("Arrow HTTP Test")

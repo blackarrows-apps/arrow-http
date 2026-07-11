@@ -147,6 +147,23 @@ class FakeHttpRequestExecutor(
         config: HttpRequestConfig,
     ): ApiResponse = handle(url, RecordedCall(FakeHttpMethod.PUT, url, body = body))
 
+    override suspend fun patchJson(
+        url: String,
+        body: Any,
+        headers: HttpHeaders,
+        authRequired: Boolean,
+        config: HttpRequestConfig,
+    ): ApiResponse = handle(url, RecordedCall(FakeHttpMethod.PATCH, url, body = body))
+
+    override suspend fun patchRaw(
+        url: String,
+        body: Any,
+        contentType: String,
+        headers: HttpHeaders,
+        authRequired: Boolean,
+        config: HttpRequestConfig,
+    ): ApiResponse = handle(url, RecordedCall(FakeHttpMethod.PATCH, url, body = body))
+
     override suspend fun deleteJson(
         url: String,
         body: Any?,

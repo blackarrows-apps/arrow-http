@@ -53,6 +53,12 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    composable(Screen.PatchJson.route) {
+                        PatchJsonScreen(
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
+
                     composable(Screen.DeleteJson.route) {
                         DeleteJsonScreen(
                             onNavigateBack = { navController.popBackStack() }

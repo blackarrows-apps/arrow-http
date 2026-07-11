@@ -14,6 +14,7 @@ import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitForm
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -159,6 +160,42 @@ class KtorHttpRequestExecutor(
         executeWithPolicies {
             val mergedHeaders = mergeHeaders(authRequired, headers, config.headers)
             client.put(url) {
+                this.contentType(ContentType.parse(contentType))
+                setBody(body)
+                applyHeaders(mergedHeaders)
+                applyConfig(config)
+            }
+        }
+
+    /** Issues a real HTTP PATCH request via Ktor's `client.patch`. */
+    override suspend fun patchJson(
+        url: String,
+        body: Any,
+        headers: HttpHeaders,
+        authRequired: Boolean,
+        config: HttpRequestConfig,
+    ): ApiResponse =
+        executeWithPolicies {
+            val mergedHeaders = mergeHeaders(authRequired, headers, config.headers)
+            client.patch(url) {
+                contentType(ContentType.Application.Json)
+                setBody(body)
+                applyHeaders(mergedHeaders)
+                applyConfig(config)
+            }
+        }
+
+    override suspend fun patchRaw(
+        url: String,
+        body: Any,
+        contentType: String,
+        headers: HttpHeaders,
+        authRequired: Boolean,
+        config: HttpRequestConfig,
+    ): ApiResponse =
+        executeWithPolicies {
+            val mergedHeaders = mergeHeaders(authRequired, headers, config.headers)
+            client.patch(url) {
                 this.contentType(ContentType.parse(contentType))
                 setBody(body)
                 applyHeaders(mergedHeaders)
