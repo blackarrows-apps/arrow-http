@@ -1,3 +1,5 @@
+import org.gradle.plugins.signing.Sign
+
 plugins {
     base
     alias(libs.plugins.kotlin.multiplatform) apply false
@@ -8,6 +10,18 @@ plugins {
     alias(libs.plugins.kotlin.compose) apply false
 }
 
+// A local verification repository is intentionally unsigned: its only consumer is the
+// isolated fixture in this checkout. Central publications still require every signature.
+val isLocalPublicationVerification = gradle.startParameter.taskNames.any {
+    it.contains("VerificationRepository", ignoreCase = true)
+}
+
+subprojects {
+    tasks.withType<Sign>().configureEach {
+        enabled = !isLocalPublicationVerification
+    }
+}
+
 // NOTE: do NOT tasks.register("clean", Delete::class) here — with both a `js` and a
 // `wasmJs` target declared across subprojects, Kotlin's Node.js root plugin applies the
 // Gradle `base` plugin itself, which tries to create its own `clean` task and collides
@@ -16,6 +30,16 @@ plugins {
 // task instead avoids the duplicate-registration race.
 tasks.clean {
     delete(rootProject.layout.buildDirectory)
+}
+
+tasks.register("publishAllPublicationsToVerificationRepository") {
+    group = "publishing"
+    description = "Publishes all library modules to the local external-consumer repository."
+    dependsOn(
+        ":http-core:publishAllPublicationsToVerificationRepository",
+        ":http-ktor:publishAllPublicationsToVerificationRepository",
+        ":http-test:publishAllPublicationsToVerificationRepository",
+    )
 }
 
 // Stub task required when arrow-http is included as a composite build inside a
