@@ -33,8 +33,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("io.github.blackarrows-apps:http-core:1.2.0")
-                implementation("io.github.blackarrows-apps:http-ktor:1.2.0")
+                implementation("io.github.blackarrows-apps:http-core:1.3.0")
+                implementation("io.github.blackarrows-apps:http-ktor:1.3.0")
             }
         }
     }
@@ -212,6 +212,43 @@ Additional HTTP client implementations will be added based on **community demand
 | iOS simulatorArm64 | ✅ | Darwin   |
 | wasmJs   | ✅     | Js            |
 | js (browser + Node) | ✅ | Js       |
+
+## Publication verification
+
+[`publication-consumer`](publication-consumer) is an independent Gradle build. It has no
+project dependency, composite-build substitution, or `mavenLocal()` repository. It resolves
+the immutable Maven coordinates and compiles both Apple Silicon variants. Its simulator test
+constructs and closes the public Ktor client, proving that the Darwin engine is usable without
+making a live network request.
+
+The fixture defaults to the pending corrective `1.3.0` release and accepts a staging
+repository URL, so the exact Maven output can be verified before Central promotion:
+
+```shell
+./gradlew -p publication-consumer \
+  -ParrowHttpRepository="file://$PWD/build/verification-repository" \
+  compileKotlinIosArm64 compileKotlinIosSimulatorArm64 iosSimulatorArm64Test
+```
+
+Published `1.2.0` cannot compile as an external Apple consumer: its root metadata advertises
+`http-core-iosarm64`, `http-core-iossimulatorarm64`, `http-ktor-iosarm64`, and
+`http-ktor-iossimulatorarm64`, but those target modules were not uploaded. Its iOS
+`createHttpClient()` also contained a `TODO`, which would throw if reached. Maven Central
+releases are immutable, so `1.3.0` is the corrective release.
+
+Before promoting `1.3.0`, publish all modules to a clean staging repository, then point the
+fixture exclusively at that repository for owned coordinates:
+
+```shell
+./gradlew publishAllPublicationsToVerificationRepository
+./gradlew -p publication-consumer \
+  -ParrowHttpVersion=1.3.0 \
+  -ParrowHttpRepository="file://$PWD/build/verification-repository" \
+  compileKotlinIosArm64 compileKotlinIosSimulatorArm64 iosSimulatorArm64Test
+```
+
+The verification repository is deliberately local and separate from `mavenLocal()`. After
+Central promotion, repeat the consumer command without `arrowHttpRepository`.
 
 ## Features
 

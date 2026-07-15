@@ -34,8 +34,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("io.blackarrows:http-core:1.2.0")
-                implementation("io.blackarrows:http-ktor:1.2.0")
+                implementation("io.github.blackarrows-apps:http-core:1.3.0")
+                implementation("io.github.blackarrows-apps:http-ktor:1.3.0")
             }
         }
     }
@@ -43,8 +43,8 @@ kotlin {
 
 // For Android/JVM projects
 dependencies {
-    implementation("io.blackarrows:http-core:1.0.0")
-    implementation("io.blackarrows:http-ktor:1.0.0")
+    implementation("io.github.blackarrows-apps:http-core:1.3.0")
+    implementation("io.github.blackarrows-apps:http-ktor:1.3.0")
 }
 ```
 
