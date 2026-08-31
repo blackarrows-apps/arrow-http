@@ -66,10 +66,10 @@ android {
 }
 
 group = "io.github.blackarrows-apps"
-version = "1.3.0"
+version = "1.3.1"
 
 mavenPublishing {
-    coordinates("io.github.blackarrows-apps", "http-core", "1.3.0")
+    coordinates("io.github.blackarrows-apps", "http-core", "1.3.1")
 
     pom {
         name.set("Arrow HTTP Core")

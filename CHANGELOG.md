@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1]
+
+### Added
+- `createHttpClient` now accepts optional `requestTimeoutMillis`, `connectTimeoutMillis`,
+  and `socketTimeoutMillis` overrides so consuming apps can tune timeouts for their own
+  endpoints instead of being locked to the library's per-platform defaults.
+
+### Fixed
+- Install Ktor's `HttpTimeout` plugin on Android, iOS, and JVM. Without it, the OkHttp
+  engine fell back to OkHttp's bare 10s read timeout on every request, which is too short
+  for endpoints that do real synchronous work server-side (e.g. a Cloud Run cold start).
+
 ## [1.3.0]
 
 ### Fixed

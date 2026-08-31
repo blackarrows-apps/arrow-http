@@ -23,7 +23,11 @@ import io.ktor.serialization.kotlinx.json.json
 // differs across Ktor minor versions and the wasmJs compilation fails to resolve it.
 // @Suppress("OPT_IN_USAGE_ERROR") achieves the same result without an import.
 @Suppress("OPT_IN_USAGE_ERROR")
-actual fun createHttpClient(): HttpClient =
+actual fun createHttpClient(
+    requestTimeoutMillis: Long?,
+    connectTimeoutMillis: Long?,
+    socketTimeoutMillis: Long?,
+): HttpClient =
     HttpClient(Js) {
         install(ContentNegotiation) {
             json(LenientJson)
@@ -32,8 +36,9 @@ actual fun createHttpClient(): HttpClient =
         // The Js engine implements timeouts via AbortController, which is
         // supported in all modern browsers including iOS Safari 15+.
         install(HttpTimeout) {
-            requestTimeoutMillis = 15_000   // abort if no full response in 15 s
-            connectTimeoutMillis = 10_000   // abort if connection not established in 10 s
+            this.requestTimeoutMillis = requestTimeoutMillis ?: 15_000   // abort if no full response in 15 s
+            this.connectTimeoutMillis = connectTimeoutMillis ?: 10_000   // abort if connection not established in 10 s
+            socketTimeoutMillis?.let { this.socketTimeoutMillis = it }
         }
         // WHY THIS IS NEEDED — browser gzip + Ktor Content-Length check
         //
