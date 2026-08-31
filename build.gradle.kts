@@ -42,6 +42,16 @@ tasks.register("publishAllPublicationsToVerificationRepository") {
     )
 }
 
+tasks.register("publishAllPublicationsToMavenCentralRepository") {
+    group = "publishing"
+    description = "Stages all library modules to Maven Central (does not release the deployment)."
+    dependsOn(
+        ":http-core:publishAllPublicationsToMavenCentralRepository",
+        ":http-ktor:publishAllPublicationsToMavenCentralRepository",
+        ":http-test:publishAllPublicationsToMavenCentralRepository",
+    )
+}
+
 // Stub task required when arrow-http is included as a composite build inside a
 // Kotlin/wasmJs host project. The Kotlin wasmJs plugin on the host walks all
 // included builds looking for a 'rootPackageJson' task to aggregate npm
