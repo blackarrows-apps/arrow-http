@@ -1,0 +1,122 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner_strategy:
+        description: 'CI runner strategy'
+        required: true
+        type: choice
+        options:
+          - mac-github-ubuntu
+          - mac-linux-local
+          - linux-github-mac
+        default: mac-linux-local
+
+permissions:
+  contents: read
+
+# Mirrors ampm-contracts' Publish workflow (.github/workflows/publish.yml there, decisions
+# recorded in its workflows/README.md "Publishing" section), adapted for this repo's actual
+# target: Maven Central via the vanniktech plugin, not GitHub Packages. Central requires GPG
+# signing and mavenCentral credentials with no unsigned/token-only fallback, so this workflow
+# never carries those as GitHub Actions secrets — it relies on ~/.gradle/gradle.properties
+# already present on the self-hosted runner's own machine, the same file the manual release
+# process already used (see this repo's "arrow-http publish requires macOS" note: Linux
+# silently drops the iosX64/iosArm64/iosSimulatorArm64 targets via
+# kotlin.native.ignoreDisabledTargets=true, which is exactly how the 1.2.0 release got burned
+# — Maven Central is immutable, so it could not be fixed after the fact).
+#
+# Job graph: verify-linux -> stage-maven-central
+#
+# - verify-linux is a fast fail-fast gate: build + test every target Linux can build (jvm,
+#   android, js, wasmJs) before spending Mac runner time or touching signing credentials.
+# - stage-maven-central runs entirely on macOS — real Apple KLIB compilation/linking only
+#   happens there — and runs the exact "Publication verification" procedure from README.md as
+#   CI: stage to a local verification repository, compile+test the `publication-consumer`
+#   fixture against it for both iOS targets, and only then stage the real upload to Maven
+#   Central. This is the direct CI-enforced fix for the 1.2.0 failure mode.
+#
+# This workflow deliberately stops at STAGING Central
+# (publishAllPublicationsToMavenCentralRepository), not releasing it
+# (publishAndReleaseToMavenCentral): the vanniktech plugin's own default is stage-only, and
+# promoting a staged deployment to public/immutable is a separate manual step at
+# https://central.sonatype.com/publishing/deployments — matching this repo's existing
+# "stop and confirm before publishing" practice until this pipeline has a track record.
+jobs:
+  verify-linux:
+    runs-on: >-
+      ${{ inputs.runner_strategy == 'mac-github-ubuntu'
+          && 'ubuntu-latest'
+          || fromJSON('["self-hosted","linux","docker"]') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build and test Linux-buildable targets
+        run: ./gradlew build --stacktrace
+
+  # macOS, not Ubuntu — publishAllPublicationsToMavenCentralRepository includes the
+  # iosArm64/iosSimulatorArm64 publications, and real Apple KLIB compilation/linking only
+  # happens on macOS.
+  stage-maven-central:
+    needs: verify-linux
+    runs-on: >-
+      ${{ inputs.runner_strategy != 'linux-github-mac'
+          && fromJSON('["self-hosted","macOS","ARM64","apple-ci"]')
+          || 'macos-15' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Accept Android SDK licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null || true
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Read release version
+        id: version
+        run: |
+          version=$(grep -oE '^version = "[^"]+"' http-core/build.gradle.kts | sed -E 's/^version = "(.*)"/\1/')
+          if [ -z "$version" ]; then
+            echo "::error::could not read version from http-core/build.gradle.kts"
+            exit 1
+          fi
+          echo "Releasing arrow-http $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Stage to local verification repository
+        run: ./gradlew publishAllPublicationsToVerificationRepository --stacktrace
+
+      - name: Verify iOS consumer compiles against the staged artifacts
+        run: |
+          ./gradlew -p publication-consumer \
+            -ParrowHttpVersion="${{ steps.version.outputs.version }}" \
+            -ParrowHttpRepository="file://$PWD/build/verification-repository" \
+            compileKotlinIosArm64 compileKotlinIosSimulatorArm64 iosSimulatorArm64Test \
+            --stacktrace
+
+      - name: Stage release to Maven Central
+        run: ./gradlew publishAllPublicationsToMavenCentralRepository --stacktrace
+
+      - name: Next steps
+        run: |
+          echo "Staged io.github.blackarrows-apps:{http-core,http-ktor,http-test}:${{ steps.version.outputs.version }} to Maven Central."
+          echo "This workflow does NOT auto-release. Review and publish the deployment at:"
+          echo "  https://central.sonatype.com/publishing/deployments"
+          echo "Then tag the release, e.g.:"
+          echo "  git tag v${{ steps.version.outputs.version }} && git push origin v${{ steps.version.outputs.version }}"

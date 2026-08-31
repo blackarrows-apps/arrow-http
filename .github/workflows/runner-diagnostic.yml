@@ -1,0 +1,45 @@
+name: Runner diagnostic
+
+# Mirrors ampm-contracts' runner-diagnostic.yml. Confirms the self-hosted runners this repo's
+# Publish workflow depends on are actually registered and online, without touching any
+# publish/signing credentials.
+
+on:
+  workflow_dispatch:
+    inputs:
+      runner_strategy:
+        description: 'Runner strategy to verify'
+        required: true
+        type: choice
+        options:
+          - mac-github-ubuntu
+          - mac-linux-local
+          - linux-github-mac
+        default: mac-linux-local
+
+jobs:
+  linux:
+    runs-on: >-
+      ${{ inputs.runner_strategy == 'mac-github-ubuntu'
+          && 'ubuntu-latest'
+          || fromJSON('["self-hosted","linux","docker"]') }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          uname -m
+          java -version
+          ./gradlew --version
+
+  apple:
+    runs-on: >-
+      ${{ inputs.runner_strategy != 'linux-github-mac'
+          && fromJSON('["self-hosted","macOS","ARM64","apple-ci"]')
+          || 'macos-15' }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          uname -m
+          sw_vers
+          xcodebuild -version
+          java -version
+          ./gradlew --version
