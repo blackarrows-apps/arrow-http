@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.2]
+
+### Fixed
+- Disable HTTP response caching on the iOS Darwin engine's requests
+  (`NSURLRequestReloadIgnoringLocalCacheData`). Unlike the Android/OkHttp engine, which never
+  caches responses to disk by default, Darwin's default config routes every request through
+  `NSURLSession`'s standard cache policy against the shared, disk-backed `NSURLCache` --
+  honoring the response's `Cache-Control`/`ETag`/`Last-Modified` (or even RFC 7234 heuristic
+  freshness with no cache headers at all) and persisting across app relaunches. Consumers
+  hitting endpoints they expect to be freshly fetched every call could silently get a stale
+  cached response on iOS with no equivalent behavior on Android.
+
 ## [1.3.1]
 
 ### Added
